@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #3B82F6;
+  --color-brand-dark: #020617;
+  --color-brand-surface: #0f172a;
+  --color-brand-accent: #6366F1;
+  --color-text-dim: #cbd5e1;
+  --color-text-muted: #64748b;
+  
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "Courier New", monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-dark text-[#F8FAFC] antialiased font-sans;
+    margin: 0;
+    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
+    background-attachment: scroll;
+    position: relative;
+  }
+}
+
+@supports not (height: 100dvh) {
+  body {
+    height: 100vh;
+  }
+}
+
+.panel {
+  @apply bg-brand-surface p-6 flex flex-col overflow-hidden;
+}
+
+.panel-header {
+  @apply bg-brand-dark px-6 py-4 flex items-center justify-between border-b border-white/5;
+}
+
+.border-light {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mono {
+  @apply font-mono text-[10px] tracking-[0.1em] uppercase;
+}
+
+.label {
+  @apply uppercase text-[10px] tracking-[0.2em] font-bold text-text-muted mb-2;
+}
+
+.chat-bubble-user {
+  @apply bg-brand-blue/5 text-slate-100 rounded-none border-l-2 border-brand-blue px-6 py-4 max-w-[95%] shadow-sm font-sans leading-relaxed;
+}
+
+.chat-bubble-model {
+  @apply bg-slate-900/30 text-slate-200 rounded-none px-6 py-4 max-w-[95%] border border-white/5 font-sans leading-relaxed;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-800 hover:bg-slate-700 transition-colors;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+.scanline {
+  @apply absolute top-0 left-0 w-full h-[2px] bg-brand-blue/10 pointer-events-none;
+  animation: scanline 8s linear infinite;
+}
+
+.glass-accent {
+  @apply bg-slate-900/50 backdrop-blur-xl border border-white/5;
+}
+
