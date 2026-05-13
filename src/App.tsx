@@ -76,9 +76,9 @@ export default function App() {
   const closeMenu = () => setIsMobileMenuOpen(false);
 
   return (
-    <div className="h-[100dvh] w-full flex flex-col bg-brand-dark overflow-hidden selection:bg-brand-blue/30 selection:text-white">
+    <div className="min-h-dvh w-full flex flex-col bg-brand-dark overflow-hidden selection:bg-brand-blue/30 selection:text-white">
       {/* SCANLINE EFFECT */}
-      <div className="scanline z-[60] overflow-hidden" />
+      <div className="scanline z-[60] pointer-events-none" />
 
       {/* MOBILE MENU OVERLAY - Z-INDEX 9999 */}
       <AnimatePresence>
@@ -88,7 +88,7 @@ export default function App() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-[9999] bg-[#020617] flex flex-col p-6 overflow-y-auto"
+            className="fixed inset-0 z-[9998] bg-[#020617] flex flex-col p-6 overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-10">
               <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* TOP HEADER - COMMAND BAR */}
-      <header className="h-16 md:h-20 border-b border-white/5 px-4 md:px-8 flex items-center justify-between glass-accent z-[9998] shrink-0 sticky top-0">
+      <header className="h-16 md:h-20 border-b border-white/5 px-4 md:px-8 flex items-center justify-between glass-accent z-[9999] shrink-0 sticky top-0">
         <div className="flex items-center gap-3 md:gap-6">
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
@@ -195,7 +195,7 @@ export default function App() {
       </header>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 flex flex-col lg:grid lg:grid-cols-12 overflow-hidden bg-white/5 relative h-full">
+      <main className="flex-1 flex flex-col grid grid-cols-1 lg:grid lg:grid-cols-12 overflow-hidden bg-white/5 relative h-full">
         
         {/* SIDEBAR - HIDDEN ON MOBILE/TABLET, SHOWN ON LARGE SCREEN */}
         <aside className="hidden lg:flex lg:col-span-4 bg-brand-surface flex-col overflow-y-auto custom-scrollbar border-r border-white/5">
@@ -279,7 +279,7 @@ export default function App() {
                </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto mb-4 pr-1 custom-scrollbar pb-24 lg:pb-10">
+            <div className="flex-1 overflow-y-auto mb-4 pr-1 custom-scrollbar pb-32 lg:pb-12">
               <AnimatePresence mode="wait">
                 {activeView === 'chat' ? (
                   <motion.div 
