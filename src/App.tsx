@@ -78,7 +78,7 @@ export default function App() {
   return (
     <div className="min-h-dvh w-full flex flex-col bg-brand-dark overflow-hidden selection:bg-brand-blue/30 selection:text-white">
       {/* SCANLINE EFFECT */}
-      <div className="scanline z-[60] pointer-events-none" />
+      <div className="scanline z-[100] pointer-events-none" />
 
       {/* MOBILE MENU OVERLAY - Z-INDEX 9999 */}
       <AnimatePresence>
