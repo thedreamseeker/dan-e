@@ -156,7 +156,7 @@ export default function App() {
         <div className="flex items-center gap-3 md:gap-6">
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
-            className="lg:hidden w-12 h-12 flex items-center justify-center bg-brand-blue/10 border border-brand-blue/20 text-brand-blue active:scale-90 transition-transform shadow-[0_0_10px_rgba(59,130,246,0.1)]"
+            className="lg:hidden w-12 h-12 flex items-center justify-center bg-brand-blue/10 border border-brand-blue/20 text-brand-blue active:scale-90 transition-transform shadow-[0_0_10px_rgba(59,130,246,0.1)] relative z-[9999]"
             title="Open Menu"
           >
             <Menu size={24} />

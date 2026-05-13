@@ -1,13 +1,355 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The Dan-E App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAN-E | Intelligence Interface v1.5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --brand-blue: #3b82f6;
+            --brand-dark: #020617;
+            --brand-surface: #0f172a;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--brand-dark);
+            color: #f8fafc;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .min-h-dvh { min-height: 100dvh; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); }
+        .scanline {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.15;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        .bubble-user { background: #1e293b; border-left: 3px solid var(--brand-blue); padding: 1rem; border-radius: 2px; }
+        .bubble-dan-e { background: #0f172a; border-right: 3px solid #6366f1; padding: 1rem; border-radius: 2px; }
+        
+        /* Loading Screen */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--brand-dark);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-out;
+        }
+        .loader-bar {
+            width: 200px;
+            height: 2px;
+            background: #1e293b;
+            position: relative;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        .loader-progress {
+            position: absolute;
+            height: 100%;
+            width: 40%;
+            background: var(--brand-blue);
+            animation: slide 1.5s infinite ease-in-out;
+        }
+        @keyframes slide {
+            0% { left: -40%; }
+            100% { left: 100%; }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-dvh overflow-x-hidden opacity-0 transition-opacity duration-1000" id="mainBody">
+    <div id="loader">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 bg-blue-600 flex items-center justify-center animate-pulse">
+                <i data-lucide="cpu" class="text-white w-5 h-5"></i>
+            </div>
+            <span class="text-lg font-black tracking-tighter mono">INITIALIZING_DAN-E...</span>
+        </div>
+        <div class="loader-bar"><div class="loader-progress"></div></div>
+        <span id="loadStatus" class="text-[10px] mono text-slate-600 mt-4 uppercase tracking-[0.3em]">Connecting to Neural Link</span>
+    </div>
 
+    <div class="scanline"></div>
+
+    <!-- MOBILE OVERLAY MENU -->
+    <div id="mobileMenu" class="fixed inset-0 z-[9999] bg-slate-950 flex-col p-8 hidden">
+        <div class="flex justify-between items-center mb-12">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <i data-lucide="cpu" class="text-white"></i>
+                </div>
+                <span class="text-2xl font-black tracking-tighter">DAN-E</span>
+            </div>
+            <button onclick="toggleMenu()" class="p-2"><i data-lucide="x" class="text-slate-400"></i></button>
+        </div>
+        <nav class="space-y-6">
+            <a href="#" onclick="showSection('terminal')" class="flex items-center gap-4 text-xl font-bold uppercase tracking-widest text-blue-400"><i data-lucide="terminal"></i> Terminal</a>
+            <a href="#" onclick="showSection('bio')" class="flex items-center gap-4 text-xl font-bold uppercase tracking-widest"><i data-lucide="user"></i> Bio</a>
+            <a href="#" onclick="showSection('record')" class="flex items-center gap-4 text-xl font-bold uppercase tracking-widest"><i data-lucide="briefcase"></i> Experience</a>
+            <a href="#" onclick="showSection('stack')" class="flex items-center gap-4 text-xl font-bold uppercase tracking-widest"><i data-lucide="database"></i> Skill Stack</a>
+        </nav>
+        <div class="mt-auto pt-8 border-t border-white/5 space-y-4">
+            <span class="text-[10px] mono text-slate-500 uppercase tracking-[0.2em]">External Uplinks</span>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="https://www.photocrowd.com/photographer-community/343180/" target="_blank" class="p-4 bg-slate-900 border border-white/5 flex flex-col items-center gap-1">
+                    <i data-lucide="camera" class="w-5 h-5 text-blue-500"></i>
+                    <span class="text-[8px] font-black uppercase">Photography</span>
+                </a>
+                <a href="https://open.spotify.com/user/31boy4v2yji46wpzkbg4elxzrl2y?si=e92d6e9e7f554650" target="_blank" class="p-4 bg-slate-900 border border-white/5 flex flex-col items-center gap-1">
+                    <i data-lucide="music" class="w-5 h-5 text-indigo-500"></i>
+                    <span class="text-[8px] font-black uppercase">Spotify</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN HEADER -->
+    <header class="h-16 md:h-20 border-b border-white/5 px-6 flex items-center justify-between glass z-[50] sticky top-0 shrink-0">
+        <div class="flex items-center gap-4">
+            <button onclick="toggleMenu()" class="md:hidden p-2 bg-white/5 rounded relative z-[9999]" id="menuBtn">
+                <i data-lucide="menu" class="text-blue-500"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex w-8 h-8 bg-blue-600 items-center justify-center">
+                    <i data-lucide="cpu" class="w-4 h-4 text-white"></i>
+                </div>
+                <h1 class="text-lg md:text-xl font-black tracking-tighter">DAN-E <span class="text-blue-500">PRO</span></h1>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="hidden lg:flex items-center gap-6 mr-6">
+                <div class="flex flex-col items-end"><span class="text-[8px] mono text-blue-400 uppercase tracking-tighter">MBA_CGPA</span><span class="text-xs font-black tracking-tight">9.0/10.0</span></div>
+                <div class="flex flex-col items-end"><span class="text-[8px] mono text-indigo-400 uppercase tracking-tighter">Neural_v</span><span class="text-xs font-black tracking-tight">1.5.0</span></div>
+            </div>
+            <div id="statusIndicator" class="px-3 py-1 bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-[10px] mono text-green-500 font-bold uppercase tracking-widest">Online</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="flex-1 flex flex-col md:grid md:grid-cols-12 overflow-hidden bg-slate-900 relative h-full">
+        <!-- SIDEBAR - FIXED INFO -->
+        <aside id="infoPanel" class="hidden md:flex md:col-span-4 lg:col-span-3 border-r border-white/5 flex-col overflow-y-auto bg-slate-950 custom-scrollbar p-8">
+            <div class="label text-[10px] mono text-blue-500 font-black uppercase tracking-[0.2em] mb-8 border-b border-blue-500/20 pb-2">System_Metadata</div>
+            
+            <div class="space-y-10">
+                <!-- BIOGRAPHY -->
+                <section id="bioSection">
+                    <h2 class="text-2xl font-black uppercase tracking-tight mb-3">Daniel Ranjan</h2>
+                    <p class="text-xs text-slate-400 font-medium leading-relaxed mb-6">Data Analyst & GenAI Strategist specializing in the intersection of Technical Engineering and Strategic Leadership. MBA Scholar from SRM IST.</p>
+                    <div class="space-y-3">
+                        <div class="p-4 bg-white/5 border-l-2 border-blue-500 group hover:bg-blue-500/5 transition-colors">
+                            <span class="text-[9px] mono text-slate-500 uppercase block mb-1">MBA_Specialization</span>
+                            <div class="text-xs font-bold uppercase tracking-wide">GenAI & Data Science</div>
+                        </div>
+                        <div class="p-4 bg-white/5 border-l-2 border-indigo-500 group hover:bg-indigo-500/5 transition-colors">
+                            <span class="text-[9px] mono text-slate-500 uppercase block mb-1">Core_Metric</span>
+                            <div class="text-xs font-bold uppercase tracking-wide">9.0 CGPA Baseline</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- EXPERIENCE -->
+                <section id="expSection">
+                    <span class="text-[10px] mono text-slate-600 uppercase tracking-widest mb-4 block">Experience_Log</span>
+                    <div class="space-y-4">
+                        <div class="relative pl-6 border-l border-white/10">
+                            <div class="absolute w-2 h-2 bg-blue-500 left-[-4.5px] top-1"></div>
+                            <h3 class="text-[10px] font-black uppercase text-blue-400">TCS</h3>
+                            <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Systems Engineer | LSHC Domain</p>
+                        </div>
+                        <div class="relative pl-6 border-l border-white/10">
+                            <div class="absolute w-2 h-2 bg-indigo-500 left-[-4.5px] top-1"></div>
+                            <h3 class="text-[10px] font-black uppercase text-indigo-400">Bosch Global</h3>
+                            <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">AI Specialist | Automotive</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </aside>
+
+        <!-- CHAT INTERFACE - THE "TERMINAL" -->
+        <section id="terminalPanel" class="flex-1 md:col-span-8 lg:col-span-9 bg-[#020617] flex flex-col overflow-hidden relative">
+            <div id="chatContainer" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 pb-24 md:pb-8">
+                <!-- SYSTEM INIT MESSAGE -->
+                <div class="bubble-dan-e max-w-[90%] md:max-w-[80%]">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                        <span class="text-[10px] mono text-slate-500 font-bold uppercase tracking-widest">Handshake_Success</span>
+                    </div>
+                    <p class="text-sm md:text-base leading-relaxed text-slate-300">Neural link established. Baseline configuration [TCS-LSHC, BOSCH-AUTO, SNAP-PRO] verified at 9.0 CGPA fidelity. I am Dan-E, your digital consult for Daniel's intelligence records.</p>
+                </div>
+            </div>
+
+            <!-- CHAT ERROR OVERLAY (HIDDEN BY DEFAULT) -->
+            <div id="chatError" class="absolute inset-x-0 bottom-[88px] md:bottom-[104px] px-6 py-4 bg-red-950/90 border-y border-red-500/20 backdrop-blur-md hidden transition-all">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="alert-triangle" class="text-red-500 w-5 h-5"></i>
+                    <p class="text-xs mono text-red-100 uppercase tracking-tight">Systems offline: Neural link to Dan-E unavailable. <a href="https://www.linkedin.com/in/danielmathewranjan" target="_blank" class="underline font-bold text-red-400">Connect via LinkedIn</a></p>
+                </div>
+            </div>
+
+            <!-- INPUT COMPONENT -->
+            <div class="p-4 md:p-6 bg-slate-950 border-t border-white/5 sticky bottom-0 z-20">
+                <div class="max-w-4xl mx-auto flex gap-3">
+                    <div class="relative flex-1 group">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500/50 group-focus-within:text-blue-500 transition-colors">
+                            <i data-lucide="terminal" class="w-4 h-4"></i>
+                        </div>
+                        <input type="text" id="userInput" placeholder="EXECUTING_COMMAND..." class="w-full bg-slate-900/50 border border-white/10 rounded-none pl-12 pr-6 py-4 text-sm mono focus:outline-none focus:border-blue-500 ring-0 transition-all text-blue-500 placeholder:text-slate-800">
+                    </div>
+                    <button id="sendBtn" onclick="handleSend()" class="px-8 bg-blue-600 hover:bg-blue-500 text-white transition-all active:scale-95 flex items-center justify-center shadow-lg shadow-blue-500/10">
+                        <i data-lucide="corner-down-left" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // CORE UI LOGIC
+        lucide.createIcons();
+        const chatContainer = document.getElementById('chatContainer');
+        const userInput = document.getElementById('userInput');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const chatError = document.getElementById('chatError');
+        const sendBtn = document.getElementById('sendBtn');
+        const statusIndicator = document.getElementById('statusIndicator');
+        let chatHistory = [];
+        let isChatOffline = false;
+
+        // 1. RESILIENT LOADING LOGIC
+        window.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('loader');
+            const mainBody = document.getElementById('mainBody');
+            
+            // Maximum timeout of 12 seconds for full initialization
+            const timeout = setTimeout(finishLoading, 12000);
+
+            function finishLoading() {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    mainBody.classList.remove('opacity-0');
+                    mainBody.classList.add('opacity-100');
+                }, 500);
+                clearTimeout(timeout);
+            }
+
+            // Simulating internal ready state (could be images loaded, etc)
+            window.addEventListener('load', finishLoading);
+        });
+
+        // 2. CHAT LOGIC
+        userInput.addEventListener('keypress', (e) => { 
+            if(e.key === 'Enter') handleSend(); 
+        });
+
+        async function handleSend() {
+            if(isChatOffline) return;
+            
+            const text = userInput.value.trim();
+            if(!text) return;
+
+            userInput.value = '';
+            addMessage('user', text);
+            chatHistory.push({ role: 'user', content: text });
+
+            // Visual feedback
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = `<div class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>`;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages: chatHistory })
+                });
+                
+                if (!response.ok) throw new Error('API_SYNC_FAILED');
+
+                const data = await response.json();
+                addMessage('model', data.message);
+                chatHistory.push({ role: 'model', content: data.message });
+            } catch (error) {
+                console.error("Neural Link Error:", error);
+                setChatOffline();
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = `<i data-lucide="corner-down-left" class="w-5 h-5"></i>`;
+                lucide.createIcons();
+            }
+        }
+
+        function setChatOffline() {
+            isChatOffline = true;
+            chatError.classList.remove('hidden');
+            statusIndicator.classList.remove('bg-green-500/10', 'border-green-500/20');
+            statusIndicator.classList.add('bg-red-500/10', 'border-red-500/20');
+            statusIndicator.innerHTML = `
+                <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                <span class="text-[10px] mono text-red-500 font-bold uppercase tracking-widest">Offline</span>
+            `;
+            userInput.disabled = true;
+            userInput.placeholder = "SYSTEM_OFFLINE_AUTHORIZATION_FAILED";
+        }
+
+        function addMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = role === 'user' ? 'bubble-user ml-auto max-w-[90%] md:max-w-[80%]' : 'bubble-dan-e max-w-[90%] md:max-w-[80%]';
+            div.innerHTML = `
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-1 h-1 rounded-full ${role === 'user' ? 'bg-blue-400' : 'bg-indigo-400'}"></div>
+                    <span class="text-[10px] mono ${role === 'user' ? 'text-blue-400' : 'text-slate-500'} font-bold uppercase tracking-widest">
+                        ${role === 'user' ? 'ADMIN_CMD' : 'DAN_E_RSP'}
+                    </span>
+                </div>
+                <div class="text-sm md:text-base leading-relaxed text-slate-300 whitespace-pre-wrap">${text}</div>
+            `;
+            chatContainer.appendChild(div);
+            // Smooth scroll to bottom
+            chatContainer.scrollTo({
+                top: chatContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // 3. MENU INTERACTION
+        function toggleMenu() {
+            if (mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.remove('hidden');
+                mobileMenu.classList.add('flex');
+            } else {
+                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('flex');
+            }
+        }
+
+        function showSection(type) {
+            toggleMenu(); // Auto-close menu
+            
+            // Logic to handle mobile view switching if needed
+            // For now, we scroll to sections or log intent
+            if(type === 'terminal') {
+                document.getElementById('terminalPanel').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // In desktop, these are in sidebar. In mobile, maybe add a snackbar or message
+                addMessage('model', `Module [${type.toUpperCase()}] is statically rendered in the Intelligence Matrix panel on wide displays. Neural link for mobile-exclusive views in development.`);
+            }
+        }
+    </script>
+</body>
+</html>
